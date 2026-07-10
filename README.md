@@ -41,7 +41,26 @@ Each hook is independent, commented, and safe to copy one at a time.
 
 ## Install
 
-### Step 1 — Copy hooks to `~/.claude/hooks/`
+```bash
+git clone https://github.com/singhjitesh889-blip/claude-code-hooks-kit.git
+cd claude-code-hooks-kit
+./install.sh
+```
+
+That copies all 7 hooks to `~/.claude/hooks/` and writes (or warns about) `settings.json`.
+
+**Or install without cloning:**
+```bash
+curl -sSL https://raw.githubusercontent.com/singhjitesh889-blip/claude-code-hooks-kit/main/install.sh | bash
+```
+
+> Note: the curl path runs from a temp clone — it needs git installed.
+
+---
+
+### Manual install
+
+If you prefer step-by-step:
 
 ```bash
 mkdir -p ~/.claude/hooks
@@ -49,11 +68,7 @@ cp hooks/*.sh ~/.claude/hooks/
 chmod +x ~/.claude/hooks/*.sh
 ```
 
-### Step 2 — Configure in `~/.claude/settings.json`
-
-Merge the hooks configuration from `settings.json` in this repo into your
-`~/.claude/settings.json`. If you don't have one yet, copy it directly:
-
+Then merge `settings.json` into `~/.claude/settings.json`. If you don't have one yet:
 ```bash
 cp settings.json ~/.claude/settings.json
 ```
