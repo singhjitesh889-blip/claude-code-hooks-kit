@@ -16,7 +16,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cp "$SCRIPT_DIR/hooks/"*.sh "$HOOKS_DIR/"
 chmod +x "$HOOKS_DIR/"*.sh
 
-echo "✓ 7 hooks copied to $HOOKS_DIR"
+echo "✓ 9 hooks copied to $HOOKS_DIR"
 
 # 2 — settings.json
 if [ ! -f "$SETTINGS_FILE" ]; then

@@ -1,7 +1,7 @@
 # claude-code-hooks-kit
 
 The architecture in [claude-code-knowledge-architecture](https://github.com/singhjitesh889-blip/claude-code-knowledge-architecture)
-is an idea. This repo is the idea *running*. Seven shell hooks turn "the
+is an idea. This repo is the idea *running*. Nine shell hooks turn "the
 assistant should have context" into "the assistant always has context,
 automatically, without me remembering to paste anything."
 
@@ -23,6 +23,16 @@ project memory file the moment a new repo appears.
 
 Each hook is independent, commented, and safe to copy one at a time.
 
+> **2026-09-08 correctness fix:** four hooks (`auto-git-add.sh`, `auto-claude-md.sh`,
+> `pre-compact.sh`, `post-compact.sh`) used a `python3 - <<'EOF'` heredoc pattern that
+> silently ate their own stdin — Claude Code's hook JSON never reached `json.load()`,
+> so these ran, did nothing, and exited clean every single time since this repo was
+> first published. No error, no signal — the exact failure mode this whole kit exists
+> to prevent, sitting undetected in its own automation layer. Fixed by separating stdin
+> capture from script-source loading; all four are now tested end-to-end against real
+> hook input before every commit that touches them. Verification, not vibes — including
+> here.
+
 ---
 
 ## The Hooks
@@ -33,6 +43,8 @@ Each hook is independent, commented, and safe to copy one at a time.
 | `user-prompt-submit.sh` | UserPromptSubmit | Detects intent, injects routing context for that domain |
 | `auto-git-add.sh` | PostToolUse (Edit/Write) | Stages files immediately after Claude edits them |
 | `auto-claude-md.sh` | PostToolUse (Edit/Write) | Creates CLAUDE.md in repos that don't have one |
+| `pre-tool-use-guard.sh` | PreToolUse (Bash) | Blocks force-push, hard reset, `rm -rf` and similar unless explicitly bypassed |
+| `subagent-verify.sh` | PostToolUse (Task) | Checks a subagent's claimed deliverable actually exists on disk |
 | `pre-compact.sh` | PreCompact | Saves session snapshot (files modified, last commands, next steps) |
 | `post-compact.sh` | PostCompact | Injects snapshot back into fresh context after compaction |
 | `session-end.sh` | Stop | Auto-commits all changes; pushes when critical files change |
@@ -47,7 +59,7 @@ cd claude-code-hooks-kit
 ./install.sh
 ```
 
-That copies all 7 hooks to `~/.claude/hooks/` and writes (or warns about) `settings.json`.
+That copies all 9 hooks to `~/.claude/hooks/` and writes (or warns about) `settings.json`.
 
 **Or install without cloning:**
 ```bash
@@ -119,6 +131,12 @@ UserPromptSubmit → user-prompt-submit.sh
 
 PostToolUse (Edit/Write) → auto-git-add.sh + auto-claude-md.sh
   Stages the edited file → creates CLAUDE.md if missing
+
+PreToolUse (Bash) → pre-tool-use-guard.sh
+  Reads the command → blocks force-push/hard-reset/rm -rf unless ALLOW_DESTRUCTIVE=1
+
+PostToolUse (Task) → subagent-verify.sh
+  Reads the subagent's reported result → checks any claimed file path exists
 
 PreCompact → pre-compact.sh
   Scans transcript → extracts in-progress files + commands + next steps

@@ -14,28 +14,29 @@
 # Configure as PostToolUse hook for Edit, Write, NotebookEdit tools.
 # See README for settings.json configuration.
 
-python3 - <<'EOF'
+input=$(cat)
+echo "$input" | python3 -c "
 import sys, json, subprocess, os
 
 try:
     data = json.load(sys.stdin)
-    fp = data.get("tool_input", {}).get("file_path", "")
+    fp = data.get('tool_input', {}).get('file_path', '')
 
     if not fp or not os.path.exists(fp):
         sys.exit(0)
 
-    dr = os.path.dirname(fp) or "."
+    dr = os.path.dirname(fp) or '.'
 
     check = subprocess.run(
-        ["git", "-C", dr, "rev-parse", "--is-inside-work-tree"],
+        ['git', '-C', dr, 'rev-parse', '--is-inside-work-tree'],
         capture_output=True
     )
     if check.returncode != 0:
         sys.exit(0)
 
-    subprocess.run(["git", "-C", dr, "add", fp], capture_output=True)
-    print(f"[hook] Auto-staged: {fp}")
+    subprocess.run(['git', '-C', dr, 'add', fp], capture_output=True)
+    print(f'[hook] Auto-staged: {fp}')
 
 except Exception:
     pass  # Never block Claude
-EOF
+"

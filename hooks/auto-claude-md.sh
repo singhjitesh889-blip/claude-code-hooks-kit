@@ -15,49 +15,49 @@
 # Configure as PostToolUse hook for Edit, Write, NotebookEdit tools.
 # See README for settings.json configuration.
 
-python3 - <<'EOF'
+input=$(cat)
+echo "$input" | python3 -c "
 import sys, json, subprocess, os
 from datetime import date
 
 try:
     data = json.load(sys.stdin)
-    fp = data.get("tool_input", {}).get("file_path", "")
+    fp = data.get('tool_input', {}).get('file_path', '')
 
     if not fp or not os.path.exists(fp):
         sys.exit(0)
 
     result = subprocess.run(
-        ["git", "-C", os.path.dirname(fp), "rev-parse", "--show-toplevel"],
+        ['git', '-C', os.path.dirname(fp), 'rev-parse', '--show-toplevel'],
         capture_output=True, text=True
     )
     if result.returncode != 0:
         sys.exit(0)
 
     repo_root = result.stdout.strip()
-    claude_md_path = os.path.join(repo_root, "CLAUDE.md")
+    claude_md_path = os.path.join(repo_root, 'CLAUDE.md')
 
     if os.path.exists(claude_md_path):
         sys.exit(0)
 
-    # Detect stack from package.json / requirements.txt
     stack_hints = []
-    pkg_json = os.path.join(repo_root, "package.json")
+    pkg_json = os.path.join(repo_root, 'package.json')
     if os.path.exists(pkg_json):
         with open(pkg_json) as f:
             content = f.read()
-        if "next" in content:
-            stack_hints.append("Next.js")
-        if "typescript" in content or '"ts"' in content:
-            stack_hints.append("TypeScript")
-        if "tailwind" in content:
-            stack_hints.append("Tailwind CSS")
-    if os.path.exists(os.path.join(repo_root, "requirements.txt")):
-        stack_hints.append("Python")
+        if 'next' in content:
+            stack_hints.append('Next.js')
+        if 'typescript' in content or '\"ts\"' in content:
+            stack_hints.append('TypeScript')
+        if 'tailwind' in content:
+            stack_hints.append('Tailwind CSS')
+    if os.path.exists(os.path.join(repo_root, 'requirements.txt')):
+        stack_hints.append('Python')
 
-    stack_str = " + ".join(stack_hints) if stack_hints else "Unknown"
+    stack_str = ' + '.join(stack_hints) if stack_hints else 'Unknown'
     repo_name = os.path.basename(repo_root)
 
-    template = f"""# {repo_name} — CLAUDE.md
+    template = f'''# {repo_name} — CLAUDE.md
 
 ## Project Overview
 <!-- Describe what this project does and who uses it -->
@@ -83,14 +83,14 @@ try:
 
 ---
 *Auto-created by claude-code-hooks-kit on {date.today()}. Update as the project evolves.*
-"""
+'''
 
-    with open(claude_md_path, "w") as f:
+    with open(claude_md_path, 'w') as f:
         f.write(template)
 
-    subprocess.run(["git", "-C", repo_root, "add", claude_md_path], capture_output=True)
-    print(f"[hook] Created CLAUDE.md in {repo_root}")
+    subprocess.run(['git', '-C', repo_root, 'add', claude_md_path], capture_output=True)
+    print(f'[hook] Created CLAUDE.md in {repo_root}')
 
 except Exception:
     pass  # Never block Claude
-EOF
+"

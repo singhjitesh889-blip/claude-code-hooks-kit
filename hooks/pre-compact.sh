@@ -16,7 +16,8 @@
 # INSTALL
 # Configure as PreCompact hook in ~/.claude/settings.json (no tool filter needed).
 
-python3 - <<'EOF'
+input=$(cat)
+SCRIPT=$(cat <<'PYEOF'
 import sys, json, os
 from datetime import datetime
 from pathlib import Path
@@ -146,4 +147,6 @@ def main():
     (sessions_dir / f"{session_id}-snapshot.md").write_text(snapshot)
 
 main()
-EOF
+PYEOF
+)
+echo "$input" | python3 -c "$SCRIPT"

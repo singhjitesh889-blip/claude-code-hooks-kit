@@ -10,7 +10,8 @@
 # Configure as PostCompact hook in ~/.claude/settings.json (no tool filter needed).
 # Must be used together with pre-compact.sh — they work as a pair.
 
-python3 - <<'EOF'
+input=$(cat)
+SCRIPT=$(cat <<'PYEOF'
 import sys, json, os
 from pathlib import Path
 
@@ -39,4 +40,6 @@ print("")
 print("*(Compaction occurred — context above shows what was in progress. Continue from here.)*")
 
 snapshot_path.unlink(missing_ok=True)
-EOF
+PYEOF
+)
+echo "$input" | python3 -c "$SCRIPT"
